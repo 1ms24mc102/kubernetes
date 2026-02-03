@@ -2,15 +2,15 @@ pipeline {
     agent any
 
     environment {
-        IMAGE_NAME = "<dockerhub_username>/flask-ci-cd"
-        DOCKERHUB_CRED = credentials('dockerhub')
+        IMAGE_NAME = "1ms24mc102/kubernetes"
+        DOCKERHUB_CRED = credentials('dockerHub')
     }
 
     stages {
 
         stage('Checkout Source Code') {
             steps {
-                git url: '<github_repo_url>', branch: 'main'
+                git url: 'https://github.com/1ms24mc102/kubernetes/', branch: 'main'
             }
         }
 
@@ -27,7 +27,7 @@ pipeline {
                 script {
                     docker.withRegistry(
                         'https://index.docker.io/v1/',
-                        'dockerhub'
+                        'dockerHub'
                     ) {
                         dockerImage.push()
                     }
@@ -35,10 +35,13 @@ pipeline {
             }
         }
 
-        stage('Deploy to Kubernetes') {
+        stage('Deploy to Kubernetes (Imperative)') {
             steps {
-                sh 'kubectl apply -f deployment.yaml'
-                sh 'kubectl apply -f service.yaml'
+                sh '''
+                kubectl delete deployment flask-app || true
+                kubectl create deployment flask-app --image=${IMAGE_NAME}:latest
+                kubectl expose deployment flask-app --type=NodePort --port=5000 || true
+                '''
             }
         }
     }
