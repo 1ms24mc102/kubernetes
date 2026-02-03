@@ -34,14 +34,5 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy to Kubernetes (Imperative)') {
-            steps {
-                sh '''
-                kubectl create deployment flask-app --image=${IMAGE_NAME}:latest
-                kubectl expose deployment flask-app --type=NodePort --port=5000 || true
-                '''
-            }
-        }
     }
 }
